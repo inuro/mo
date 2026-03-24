@@ -44,7 +44,16 @@ credits: depsdev generate
 	printf "\n================================================================\n\n" >> CREDITS
 	cat internal/frontend/CREDITS_FRONTEND >> CREDITS
 
+app:
+	bash macos/build-app.sh
+
+install-app: app
+	ditto Mo.app /Applications/Mo.app
+	codesign --force --deep --sign - /Applications/Mo.app
+	$(eval LSREGISTER := $(shell command -v lsregister 2>/dev/null || echo "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"))
+	$(LSREGISTER) -f /Applications/Mo.app
+
 prerelease_for_tagpr: credits
 	git add CHANGELOG.md CREDITS go.mod go.sum
 
-.PHONY: default ci generate test build dev screenshot lint fmt fmt-check depsdev credits prerelease_for_tagpr
+.PHONY: default ci generate test build dev screenshot lint fmt fmt-check depsdev credits prerelease_for_tagpr app install-app
